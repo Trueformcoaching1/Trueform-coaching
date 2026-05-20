@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<title>TrueForm Coaching</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg: #0a0a0f;
+  --surface: #111118;
+  --card: #16161f;
+  --border: #1e1e2e;
+  --accent: #c8f65a;
+  --accent-dim: #9bbf3e;
+  --gold: #f0c060;
+  --text: #f0f0f0;
+  --muted: #6b6b80;
+  --danger: #ff5566;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;overflow-x:hidden;}
+.bebas{font-family:'Bebas Neue',sans-serif;letter-spacing:1px;}
+.hidden{display:none!important;}
+
+/* ── SCREENS ── */
+.screen{display:none;min-height:100vh;}
+.screen.active{display:flex;flex-direction:column;}
+
+/* ── LANDING ── */
+#landing{align-items:center;justify-content:center;padding:32px 24px;position:relative;overflow:hidden;text-align:center;}
+.land-bg{position:absolute;inset:0;background:radial-gradient(ellipse 80% 50% at 50% 0%,#1a2a0a,transparent 60%),radial-gradient(ellipse 60% 40% at 80% 90%,#0a1a20,transparent 60%);pointer-events:none;}
+.grid{position:absolute;inset:0;background-image:linear-gradient(rgba(200,246,90,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(200,246,90,.04) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;}
+.logo-mark{width:72px;height:72px;border-radius:20px;background:var(--accent);display:flex;align-items:center;justify-content:center;margin:0 auto 24px;box-shadow:0 0 40px rgba(200,246,90,.35);}
+.logo-mark span{font-family:'Bebas Neue';font-size:32px;color:#0a0a0f;}
+#landing h1{font-family:'Bebas Neue';font-size:clamp(52px,12vw,96px);line-height:.9;letter-spacing:2px;margin-bottom:16px;}
+#landing h1 em{color:var(--accent);font-style:normal;}
+#landing > p{color:var(--muted);font-size:15px;max-width:380px;line-height:1.7;margin:0 auto 40px;}
+.btn-row{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;}
+.pills{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:44px;}
+.pill{background:rgba(255,255,255,.04);border:1px solid var(--border);padding:7px 16px;border-radius:999px;font-size:13px;color:var(--muted);}
+
+/* ── BUTTONS ── */
+.btn-primary{background:var(--accent);color:#0a0a0f;border:none;padding:14px 32px;border-radius:12px;font-family:'Bebas Neue';font-size:18px;letter-spacing:1px;cursor:pointer;transition:all .2s;}
+.btn-primary:hover{background:var(--accent-dim);transform:translateY(-1px);}
+.btn-outline{background:transparent;color:var(--accent);border:1.5px solid var(--accent);padding:14px 32px;border-radius:12px;font-family:'Bebas Neue';font-size:18px;letter-spacing:1px;cursor:pointer;transition:all .2s;}
+.btn-outline:hover{background:rgba(200,246,90,.08);}
+.btn-ghost{background:transparent;color:var(--muted);border:1.5px solid var(--border);padding:12px 22px;border-radius:10px;font-size:14px;cursor:pointer;transition:all .2s;font-family:'DM Sans';}
+.btn-ghost:hover{border-color:var(--muted);color:var(--text);}
+.btn-full{width:100%;margin-top:8px;}
+.btn-sm{padding:9px 18px;font-size:14px;border-radius:9px;}
+
+/* ── AUTH ── */
+#signup,#login,#goals{align-items:center;justify-content:center;padding:24px;}
+.auth-card{background:var(--card);border:1px solid var(--border);border-radius:24px;padding:36px;width:100%;max-width:420px;}
+.auth-logo{display:flex;align-items:center;gap:10px;margin-bottom:24px;}
+.auth-logo .lm{width:40px;height:40px;border-radius:11px;background:var(--accent);display:flex;align-items:center;justify-content:center;}
+.auth-logo .lm span{font-family:'Bebas Neue';font-size:18px;color:#0a0a0f;}
+.auth-logo strong{font-family:'Bebas Neue';font-size:22px;}
+.auth-card h2{font-family:'Bebas Neue';font-size:34px;margin-bottom:4px;}
+.auth-card .sub{color:var(--muted);font-size:14px;margin-bottom:28px;}
+.field{margin-bottom:16px;}
+.field label{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;}
+.field input{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;color:var(--text);font-size:15px;outline:none;transition:border-color .2s;font-family:'DM Sans';}
+.field input:focus{border-color:var(--accent);}
+.auth-link{text-align:center;margin-top:16px;color:var(--muted);font-size:13px;}
+.auth-link a{color:var(--accent);cursor:pointer;text-decoration:none;}
+.step-dots{display:flex;gap:6px;margin-bottom:22px;}
+.step-dot{flex:1;height:3px;border-radius:999px;background:var(--border);transition:background .3s;}
+.step-dot.on{background:var(--accent);}
+.opt-btn{width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:13px 16px;text-align:left;color:var(--text);font-size:15px;cursor:pointer;transition:all .2s;margin-bottom:10px;font-family:'DM Sans';}
+.opt-btn:hover,.opt-btn.sel{border-color:var(--accent);background:rgba(200,246,90,.06);color:var(--accent);}
+
+/* ── APP SHELL ── */
+#app{position:relative;}
+#app.active{display:block;min-height:100vh;}
+.app-wrap{max-width:500px;margin:0 auto;display:flex;flex-direction:column;min-height:100vh;}
+.top-bar{padding:18px 20px 0;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.top-bar .logo-row{display:flex;align-items:center;gap:10px;}
+.top-bar .lm2{width:36px;height:36px;border-radius:10px;background:var(--accent);display:flex;align-items:center;justify-content:center;}
+.top-bar .lm2 span{font-family:'Bebas Neue';font-size:16px;color:#0a0a0f;}
+.top-bar .brand{font-family:'Bebas Neue';font-size:20px;}
+.top-bar .right{display:flex;align-items:center;gap:10px;}
+.streak-chip{background:rgba(200,246,90,.12);border:1px solid rgba(200,246,90,.3);border-radius:999px;padding:4px 12px;font-size:12px;color:var(--accent);}
+.user-av{width:36px;height:36px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#0a0a0f;cursor:pointer;flex-shrink:0;}
+.content{flex:1;padding:20px;padding-bottom:100px;overflow-y:auto;}
+.tab-pane{display:none;}
+.tab-pane.active{display:block;}
+
+/* ── BOTTOM NAV ── */
+.bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:500px;background:rgba(17,17,24,.97);border-top:1px solid var(--border);display:flex;padding:12px 0 20px;backdrop-filter:blur(14px);z-index:100;}
+.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;color:var(--muted);font-size:11px;border:none;background:none;transition:color .2s;font-family:'DM Sans';}
+.nav-btn.active{color:var(--accent);}
+.nav-icon{font-size:22px;line-height:1;}
+
+/* ── HOME TAB ── */
+.greet-card{background:linear-gradient(135deg,rgba(200,246,90,.14),rgba(200,246,90,.04));border:1px solid rgba(200,246,90,.3);border-radius:20px;padding:24px;margin-bottom:18px;}
+.greet-card h3{font-family:'Bebas Neue';font-size:28px;color:var(--accent);}
+.greet-card p{color:var(--muted);font-size:14px;margin-top:4px;}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px;}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:18px;}
+.stat-val{font-family:'Bebas Neue';font-size:36px;color:var(--accent);line-height:1;}
+.stat-lbl{font-size:12px;color:var(--muted);margin-top:4px;}
+.prog-bar{height:6px;background:var(--border);border-radius:999px;margin-top:8px;overflow:hidden;}
+.prog-fill{height:100%;background:var(--accent);border-radius:999px;transition:width .5s;}
+.sec-title{font-family:'Bebas Neue';font-size:18px;color:var(--muted);margin-bottom:12px;letter-spacing:1px;}
+.checkin-banner{background:var(--accent);border-radius:16px;padding:20px;display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;cursor:pointer;border:none;width:100%;text-align:left;}
+.checkin-banner h4{font-family:'Bebas Neue';font-size:22px;color:#0a0a0f;}
+.checkin-banner p{font-size:13px;color:rgba(0,0,0,.55);margin-top:2px;}
+.done-banner{background:var(--card);border:1px solid rgba(200,246,90,.35);border-radius:16px;padding:20px;display:flex;align-items:center;gap:16px;margin-bottom:18px;}
+
+/* ── MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.82);display:flex;align-items:flex-end;z-index:200;opacity:0;pointer-events:none;transition:opacity .25s;}
+.modal-overlay.open{opacity:1;pointer-events:all;}
+.modal-sheet{background:var(--card);border-radius:24px 24px 0 0;padding:32px 24px 44px;width:100%;max-width:500px;margin:0 auto;transform:translateY(40px);transition:transform .3s;}
+.modal-overlay.open .modal-sheet{transform:translateY(0);}
+.modal-sheet h3{font-family:'Bebas Neue';font-size:26px;margin-bottom:20px;}
+.emoji-row{display:flex;justify-content:space-around;margin-bottom:8px;}
+.emoji-opt{font-size:36px;cursor:pointer;padding:8px;border-radius:12px;border:2px solid transparent;transition:all .2s;background:none;}
+.emoji-opt:hover,.emoji-opt.sel{border-color:var(--accent);background:rgba(200,246,90,.1);transform:scale(1.15);}
+.textarea-field{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;color:var(--text);font-size:15px;font-family:'DM Sans';outline:none;resize:none;}
+.textarea-field:focus{border-color:var(--accent);}
+.modal-nav{display:flex;gap:10px;margin-top:24px;}
+
+/* ── PROGRESS TAB ── */
+.goal-tag{display:inline-block;background:rgba(200,246,90,.1);color:var(--accent);border:1px solid rgba(200,246,90,.3);padding:4px 14px;border-radius:999px;font-size:13px;margin-bottom:16px;}
+.prog-item{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px 18px;margin-bottom:12px;}
+.prog-item-hdr{display:flex;justify-content:space-between;margin-bottom:10px;}
+.prog-item-hdr span{font-size:14px;font-weight:500;}
+.prog-item-hdr em{color:var(--accent);font-style:normal;font-size:14px;}
+.history-row{display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--border);font-size:14px;}
+.history-row .day{color:var(--muted);width:36px;}
+.history-row .status{color:var(--accent);}
+
+/* ── PHOTOS TAB ── */
+.upload-zone{border:2px dashed var(--border);border-radius:16px;padding:36px;display:flex;flex-direction:column;align-items:center;gap:12px;cursor:pointer;transition:all .2s;margin-bottom:16px;background:none;width:100%;}
+.upload-zone:hover{border-color:var(--accent);background:rgba(200,246,90,.04);}
+.upload-zone p{color:var(--muted);font-size:14px;text-align:center;pointer-events:none;}
+.upload-zone .upload-hint{color:var(--accent);font-size:12px;}
+.img-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.img-thumb{border-radius:12px;overflow:hidden;aspect-ratio:1;background:var(--surface);display:flex;align-items:center;justify-content:center;border:1px solid var(--border);position:relative;}
+.img-thumb img{width:100%;height:100%;object-fit:cover;}
+.img-label{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.65);padding:6px 8px;font-size:11px;color:var(--muted);}
+.video-thumb-icon{font-size:36px;}
+
+/* ── CHAT TAB ── */
+.chat-hdr{display:flex;align-items:center;gap:12px;margin-bottom:18px;padding-bottom:16px;border-bottom:1px solid var(--border);}
+.chat-av{width:44px;height:44px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#0a0a0f;flex-shrink:0;}
+.chat-av.client{background:var(--surface);border:1px solid var(--border);color:var(--text);}
+.online{font-size:12px;color:var(--accent);}
+.vid-btn{width:42px;height:42px;border-radius:50%;background:var(--card);border:1px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;}
+.messages{display:flex;flex-direction:column;gap:12px;margin-bottom:16px;min-height:200px;}
+.msg{max-width:76%;}
+.msg.coach{align-self:flex-start;}
+.msg.client{align-self:flex-end;}
+.bubble{padding:10px 14px;border-radius:16px;font-size:14px;line-height:1.5;}
+.coach .bubble{background:var(--card);border:1px solid var(--border);border-bottom-left-radius:4px;}
+.client .bubble{background:var(--accent);color:#0a0a0f;border-bottom-right-radius:4px;}
+.msg-time{font-size:11px;color:var(--muted);margin-top:3px;padding:0 4px;}
+.client .msg-time{text-align:right;}
+.chat-input-row{display:flex;gap:10px;align-items:center;}
+.chat-input{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:24px;padding:12px 18px;color:var(--text);font-size:14px;outline:none;font-family:'DM Sans';}
+.chat-input:focus{border-color:var(--accent);}
+.send-btn{width:44px;height:44px;border-radius:50%;background:var(--accent);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+
+/* ── COACH DASHBOARD ── */
+.coach-stat-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:20px;}
+.client-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:10px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:all .2s;}
+.client-card:hover{border-color:rgba(200,246,90,.4);}
+.cl-av{width:48px;height:48px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#0a0a0f;flex-shrink:0;}
+.cl-info{flex:1;}
+.cl-info h4{font-size:15px;font-weight:600;margin-bottom:2px;}
+.cl-info p{font-size:12px;color:var(--muted);}
+.streak-badge{background:rgba(200,246,90,.15);color:var(--accent);font-size:12px;padding:4px 10px;border-radius:999px;font-weight:600;white-space:nowrap;}
+.back-btn{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:14px;cursor:pointer;margin-bottom:20px;background:none;border:none;font-family:'DM Sans';}
+.back-btn:hover{color:var(--text);}
+.detail-header{display:flex;align-items:center;gap:16px;margin-bottom:24px;}
+.detail-av{width:60px;height:60px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:#0a0a0f;}
+.checkin-detail-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);font-size:14px;}
+.checkin-detail-row .lbl{color:var(--muted);}
+
+/* ── VIDEO CALL ── */
+#call-screen{position:fixed;inset:0;background:#000;z-index:500;display:none;flex-direction:column;}
+#call-screen.active{display:flex;}
+.call-main{flex:1;background:var(--surface);display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;}
+.call-big-av{width:100px;height:100px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue';font-size:42px;color:#0a0a0f;}
+.call-name{font-family:'Bebas Neue';font-size:30px;margin-top:16px;}
+.call-status{color:var(--accent);font-size:14px;margin-top:4px;}
+.self-preview{position:absolute;bottom:20px;right:20px;width:100px;height:140px;background:var(--card);border-radius:16px;border:2px solid var(--accent);display:flex;align-items:center;justify-content:center;font-size:32px;}
+.call-controls{background:rgba(0,0,0,.92);padding:24px;display:flex;justify-content:center;gap:20px;}
+.call-btn{width:60px;height:60px;border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:24px;transition:transform .2s;}
+.call-btn:hover{transform:scale(1.1);}
+.call-btn.end{background:var(--danger);}
+.call-btn.ctrl{background:var(--card);border:1px solid var(--border);}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--accent);color:#0a0a0f;padding:10px 22px;border-radius:999px;font-size:14px;font-weight:600;z-index:999;opacity:0;transition:all .3s;pointer-events:none;white-space:nowrap;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+.fadein{animation:fadeIn .35s ease forwards;}
+</style>
+</head>
+<body>
+
+<!-- ═══ LANDING ═══ -->
+<div id="landing" class="screen active">
+  <div class="land-bg"></div>
+  <div class="grid"></div>
+  <div class="logo-mark"><span>TF</span></div>
+  <h1 class="bebas">TRUEFORM<br/><em>COACHING</em></h1>
+  <p>Transform your body, sharpen your mind, and show up as your best self — with a coach who's truly in your corner.</p>
+  <div class="btn-row">
+    <button class="btn-primary" onclick="show('signup')">Start Your Journey</button>
+    <button class="btn-outline" onclick="coachLogin()">Coach Login</button>
+  </div>
+  <div class="pills">
+    <div class="pill">✦ Daily Check-ins</div>
+    <div class="pill">✦ Progress Tracking</div>
+    <div class="pill">✦ Photo Updates</div>
+    <div class="pill">✦ Video Calls</div>
+    <div class="pill">✦ 1:1 Messaging</div>
+  </div>
+</div>
+
+<!-- ═══ SIGN UP ═══ -->
+<div id="signup" class="screen">
+  <div class="auth-card fadein" style="margin:auto;">
+    <div class="auth-logo">
+      <div class="lm"><span>TF</span></div>
+      <strong>TRUEFORM</strong>
+    </div>
+    <h2>Create Account</h2>
+    <p class="sub">Start your transformation today</p>
+    <div class="field"><label>Full Name</label><input id="su-name" placeholder="Your name" type="text"/></div>
+    <div class="field"><label>Email</label><input id="su-email" placeholder="you@email.com" type="email"/></div>
+    <div class="field"><label>Password</label><input id="su-pass" placeholder="••••••••" type="password"/></div>
+    <button class="btn-primary btn-full" onclick="doSignup()">Continue →</button>
+    <p class="auth-link">Already have an account? <a onclick="show('login')">Log in</a></p>
+    <p class="auth-link" style="margin-top:6px;"><a onclick="show('landing')">← Back</a></p>
+  </div>
+</div>
+
+<!-- ═══ LOGIN ═══ -->
+<div id="login" class="screen">
+  <div class="auth-card fadein" style="margin:auto;">
+    <div class="auth-logo">
+      <div class="lm"><span>TF</span></div>
+      <strong>TRUEFORM</strong>
+    </div>
+    <h2>Welcome Back</h2>
+    <p class="sub">Log in to your account</p>
+    <div class="field"><label>Email</label><input id="li-email" placeholder="you@email.com" type="email"/></div>
+    <div class="field"><label>Password</label><input id="li-pass" placeholder="••••••••" type="password"/></div>
+    <button class="btn-primary btn-full" onclick="doLogin()">Log In →</button>
+    <p class="auth-link">No account? <a onclick="show('signup')">Sign up</a></p>
+    <p class="auth-link" style="margin-top:6px;"><a onclick="show('landing')">← Back</a></p>
+  </div>
+</div>
+
+<!-- ═══ GOAL QUESTIONS ═══ -->
+<div id="goals" class="screen">
+  <div class="auth-card fadein" style="margin:auto;">
+    <div class="step-dots" id="goal-dots"></div>
+    <p style="color:var(--muted);font-size:13px;margin-bottom:6px;" id="goal-counter"></p>
+    <h2 class="bebas" id="goal-q" style="font-size:26px;margin-bottom:20px;"></h2>
+    <div id="goal-opts"></div>
+  </div>
+</div>
+
+<!-- ═══ MAIN APP ═══ -->
+<div id="app" class="screen">
+  <div class="app-wrap">
+    <div class="top-bar">
+      <div class="logo-row">
+        <div class="lm2"><span>TF</span></div>
+        <span class="brand bebas">TRUEFORM</span>
+      </div>
+      <div class="right">
+        <div class="streak-chip" id="streak-chip">🔥 8 Day Streak</div>
+        <div class="user-av" id="user-av">U</div>
+      </div>
+    </div>
+
+    <div class="content">
+      <!-- HOME -->
+      <div class="tab-pane active" id="tab-home">
+        <div class="greet-card">
+          <h3 id="greet-name">GOOD MORNING! 👋</h3>
+          <p>Day 8 of your journey. Keep pushing — you're building something real.</p>
+        </div>
+        <div id="checkin-area">
+          <button class="checkin-banner" onclick="openCheckin()">
+            <div><h4>Daily Check-in</h4><p>2 min · Tell me how your day went</p></div>
+            <span style="font-size:28px;">📋</span>
+          </button>
+        </div>
+        <div class="stat-grid">
+          <div class="stat-card"><div class="stat-val" id="streak-val">8</div><div class="stat-lbl">Day Streak 🔥</div></div>
+          <div class="stat-card"><div class="stat-val">5/7</div><div class="stat-lbl">Workouts This Week</div></div>
+          <div class="stat-card">
+            <div class="stat-val">68%</div><div class="stat-lbl">Goal Progress</div>
+            <div class="prog-bar"><div class="prog-fill" style="width:68%"></div></div>
+          </div>
+          <div class="stat-card"><div class="stat-val" id="checkin-count">12</div><div class="stat-lbl">Check-ins Logged</div></div>
+        </div>
+        <div class="sec-title">YOUR GOAL</div>
+        <div class="goal-tag" id="home-goal-tag">Build Muscle</div>
+        <div class="prog-bar" style="height:8px;margin-bottom:8px;"><div class="prog-fill" style="width:68%"></div></div>
+        <p style="font-size:13px;color:var(--muted);">68% complete · <span id="home-timeline">3 Month</span> program</p>
+      </div>
+
+      <!-- PROGRESS -->
+      <div class="tab-pane" id="tab-progress">
+        <div class="sec-title">GOAL OVERVIEW</div>
+        <div class="goal-tag" id="prog-goal-tag">Build Muscle · 3 Months</div>
+        <div id="prog-bars"></div>
+        <div class="sec-title" style="margin-top:24px;">RECENT CHECK-INS</div>
+        <div id="history-list"></div>
+      </div>
+
+      <!-- PHOTOS -->
+      <div class="tab-pane" id="tab-photos">
+        <div class="sec-title">SHARE PROGRESS PHOTOS</div>
+        <input type="file" id="file-input" accept="image/*,video/*" multiple style="display:none" onchange="handleUpload(event)"/>
+        <button class="upload-zone" onclick="document.getElementById('file-input').click()">
+          <span style="font-size:44px;">📸</span>
+          <p>Tap to upload photos or videos<br/><span class="upload-hint">Share your progress with your coach</span></p>
+        </button>
+        <div class="sec-title" id="uploaded-title" style="display:none;">UPLOADED</div>
+        <div class="img-grid" id="img-grid"></div>
+      </div>
+
+      <!-- CHAT (Client) -->
+      <div class="tab-pane" id="tab-chat">
+        <div class="chat-hdr">
+          <div class="chat-av">TF</div>
+          <div style="flex:1;">
+            <div style="font-weight:600;">TrueForm Coaching</div>
+            <div class="online">● Online</div>
+          </div>
+          <button class="vid-btn" onclick="startCall('TrueForm Coaching','TF')">📹</button>
+        </div>
+        <div class="messages" id="client-messages"></div>
+        <div class="chat-input-row">
+          <input class="chat-input" id="client-chat-input" placeholder="Message your coach..." onkeydown="if(event.key==='Enter')sendClientMsg()"/>
+          <button class="send-btn" onclick="sendClientMsg()">➤</button>
+        </div>
+      </div>
+
+      <!-- COACH: CLIENTS LIST -->
+      <div class="tab-pane" id="tab-clients">
+        <div class="coach-stat-grid">
+          <div class="stat-card"><div class="stat-val">3</div><div class="stat-lbl">Clients</div></div>
+          <div class="stat-card"><div class="stat-val">2</div><div class="stat-lbl">Today</div></div>
+          <div class="stat-card"><div class="stat-val">94%</div><div class="stat-lbl">Retention</div></div>
+        </div>
+        <div class="sec-title">YOUR CLIENTS</div>
+        <div id="client-list"></div>
+      </div>
+
+      <!-- COACH: CLIENT DETAIL -->
+      <div class="tab-pane" id="tab-client-detail">
+        <button class="back-btn" onclick="showTab('clients')">← Back to Clients</button>
+        <div class="detail-header">
+          <div class="detail-av" id="detail-av">JM</div>
+          <div style="flex:1;">
+            <div style="font-weight:700;font-size:18px;" id="detail-name">Jordan M.</div>
+            <div style="font-size:13px;color:var(--muted);" id="detail-goal">Build Muscle</div>
+          </div>
+          <button class="btn-outline btn-sm" id="detail-call-btn">📹 Call</button>
+        </div>
+        <div class="stat-grid">
+          <div class="stat-card"><div class="stat-val" id="detail-streak">7</div><div class="stat-lbl">Day Streak</div></div>
+          <div class="stat-card">
+            <div class="stat-val" id="detail-prog">68%</div><div class="stat-lbl">Progress</div>
+            <div class="prog-bar"><div class="prog-fill" id="detail-prog-fill" style="width:68%"></div></div>
+          </div>
+        </div>
+        <div class="sec-title">LAST CHECK-IN</div>
+        <div id="detail-checkin"></div>
+        <div class="sec-title" style="margin-top:20px;">SEND MESSAGE</div>
+        <div class="chat-input-row">
+          <input class="chat-input" id="coach-chat-input" placeholder="Send a message to client..." onkeydown="if(event.key==='Enter')sendCoachMsg()"/>
+          <button class="send-btn" onclick="sendCoachMsg()">➤</button>
+        </div>
+        <div class="messages" id="coach-messages" style="margin-top:14px;"></div>
+      </div>
+
+      <!-- COACH: MESSAGES -->
+      <div class="tab-pane" id="tab-coach-messages">
+        <div class="sec-title">MESSAGES</div>
+        <div id="coach-msg-list"></div>
+      </div>
+    </div>
+
+    <!-- BOTTOM NAV (client) -->
+    <nav class="bottom-nav" id="client-nav">
+      <button class="nav-btn active" data-tab="home" onclick="showTab('home',this)"><span class="nav-icon">🏠</span>Home</button>
+      <button class="nav-btn" data-tab="progress" onclick="showTab('progress',this)"><span class="nav-icon">📊</span>Progress</button>
+      <button class="nav-btn" data-tab="photos" onclick="showTab('photos',this)"><span class="nav-icon">📸</span>Photos</button>
+      <button class="nav-btn" data-tab="chat" onclick="showTab('chat',this)"><span class="nav-icon">💬</span>Coach</button>
+    </nav>
+
+    <!-- BOTTOM NAV (coach) -->
+    <nav class="bottom-nav hidden" id="coach-nav">
+      <button class="nav-btn active" data-tab="clients" onclick="showTab('clients',this)"><span class="nav-icon">👥</span>Clients</button>
+      <button class="nav-btn" data-tab="coach-messages" onclick="showTab('coach-messages',this)"><span class="nav-icon">💬</span>Messages</button>
+    </nav>
+  </div>
+</div>
+
+<!-- ═══ CHECK-IN MODAL ═══ -->
+<div class="modal-overlay" id="checkin-modal">
+  <div class="modal-sheet">
+    <div class="step-dots" id="ci-dots"></div>
+    <h3 id="ci-question"></h3>
+    <div id="ci-body"></div>
+    <div class="modal-nav">
+      <button class="btn-ghost" id="ci-back" onclick="ciBack()">← Back</button>
+      <button class="btn-primary" style="flex:1;" id="ci-next" onclick="ciNext()">Next →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ VIDEO CALL SCREEN ═══ -->
+<div id="call-screen">
+  <div class="call-main">
+    <div style="display:flex;flex-direction:column;align-items:center;">
+      <div class="call-big-av" id="call-av">TF</div>
+      <div class="call-name" id="call-name">TrueForm Coaching</div>
+      <div class="call-status" id="call-status">● Connecting...</div>
+    </div>
+    <div class="self-preview">👤</div>
+  </div>
+  <div class="call-controls">
+    <button class="call-btn ctrl" id="mute-btn" onclick="toggleMute()">🎙️</button>
+    <button class="call-btn ctrl">📷</button>
+    <button class="call-btn end" onclick="endCall()">📵</button>
+    <button class="call-btn ctrl">💬</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════
+let state = {
+  role: null,        // 'client' | 'coach'
+  name: '',
+  goals: {},
+  checkinDone: false,
+  checkinCount: 12,
+  streak: 8,
+  checkInAnswers: {},
+  uploadedImages: [],
+  clientMessages: [
+    {from:'coach', text:"Hey! Great check-in yesterday. Your consistency is showing 🔥", time:"9:00 AM"},
+    {from:'client', text:"Thanks! Feeling way more energized this week", time:"9:15 AM"},
+    {from:'coach', text:"That's the work paying off. Let's push harder this week 💪", time:"9:17 AM"},
+  ],
+  coachMessages: [],
+  selectedClient: null,
+  callTimer: null,
+  callSeconds: 0,
+  muted: false,
+};
+
+const CLIENTS = [
+  {id:1, name:"Jordan M.", goal:"Build Muscle", streak:7, lastCheckin:"Today", avatar:"JM", progress:68,
+   checkin:{mood:"😊 Great", sleep:"7–8 hrs", nutrition:"Good", workout:"Completed ✓", win:"Hit a new PR on bench!", challenge:"Meal prepping on weekends"}},
+  {id:2, name:"Aisha K.", goal:"Lose Weight", streak:14, lastCheckin:"Yesterday", avatar:"AK", progress:45,
+   checkin:{mood:"🙂 Okay", sleep:"5–6 hrs", nutrition:"Okay", workout:"Partial", win:"Drank 3L of water!", challenge:"Late-night snacking"}},
+  {id:3, name:"Tyler R.", goal:"Improve Mindset", streak:3, lastCheckin:"Today", avatar:"TR", progress:82,
+   checkin:{mood:"🤩 Amazing", sleep:"8+ hrs", nutrition:"Excellent", workout:"Completed ✓", win:"Meditated for 20 mins", challenge:"Managing work stress"}},
+];
+
+const GOAL_QUESTIONS = [
+  {id:"primary", q:"What's your primary goal?", opts:["Lose Weight","Build Muscle","Improve Mindset","Increase Energy","Overall Wellness"]},
+  {id:"timeline", q:"What's your timeline?", opts:["1 Month","3 Months","6 Months","1 Year","Ongoing"]},
+  {id:"commitment", q:"How many days/week can you commit?", opts:["1–2 Days","3–4 Days","5–6 Days","Every Day"]},
+  {id:"obstacles", q:"Biggest obstacle right now?", opts:["Motivation","Time","Knowledge","Accountability","Stress"]},
+];
+let goalStep = 0;
+
+const CHECKIN_QUESTIONS = [
+  {id:"mood", q:"How are you feeling today?", type:"emoji", opts:["😞","😐","🙂","😊","🤩"]},
+  {id:"sleep", q:"How many hours did you sleep?", type:"opts", opts:["<5 hrs","5–6 hrs","7–8 hrs","8+ hrs"]},
+  {id:"nutrition", q:"How was your nutrition today?", type:"opts", opts:["Poor","Okay","Good","Excellent"]},
+  {id:"workout", q:"Did you complete your workout?", type:"opts", opts:["Not yet","Partial","Yes!","Rest day"]},
+  {id:"win", q:"What's one win from today?", type:"text"},
+  {id:"challenge", q:"Anything you struggled with?", type:"text"},
+];
+let ciStep = 0;
+
+// ══════════════════════════════════════
+//  NAVIGATION
+// ══════════════════════════════════════
+function show(screenId) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const el = document.getElementById(screenId);
+  el.classList.add('active');
+  if(screenId === 'app') el.style.display = 'block';
+}
+
+function showTab(tabId, btn) {
+  document.querySelectorAll('.tab-pane').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + tabId).classList.add('active');
+  const nav = state.role === 'coach' ? document.getElementById('coach-nav') : document.getElementById('client-nav');
+  nav.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  if(tabId === 'clients') renderClientList();
+  if(tabId === 'progress') renderProgress();
+  if(tabId === 'chat') renderClientChat();
+  if(tabId === 'coach-messages') renderCoachMsgList();
+}
+
+// ══════════════════════════════════════
+//  AUTH
+// ══════════════════════════════════════
+function doSignup() {
+  const name = document.getElementById('su-name').value.trim();
+  const email = document.getElementById('su-email').value.trim();
+  if(!name || !email){ showToast('Please fill in all fields'); return; }
+  state.name = name;
+  state.role = 'client';
+  goalStep = 0;
+  renderGoalQuestion();
+  show('goals');
+}
+
+function doLogin() {
+  const email = document.getElementById('li-email').value.trim();
+  if(!email){ showToast('Please enter your email'); return; }
+  state.name = email.split('@')[0];
+  state.role = 'client';
+  launchApp();
+}
+
+function coachLogin() {
+  state.role = 'coach';
+  state.name = 'Coach';
+  launchApp();
+}
+
+function launchApp() {
+  // set UI
+  document.getElementById('user-av').textContent = state.name[0].toUpperCase();
+  if(state.role === 'coach') {
+    document.getElementById('streak-chip').style.display = 'none';
+    document.getElementById('client-nav').classList.add('hidden');
+    document.getElementById('coach-nav').classList.remove('hidden');
+    renderClientList();
+    show('app');
+    showTab('clients', document.querySelector('#coach-nav .nav-btn'));
+  } else {
+    document.getElementById('greet-name').textContent = `GOOD MORNING, ${state.name.toUpperCase()}! 👋`;
+    document.getElementById('home-goal-tag').textContent = state.goals.primary || 'Build Muscle';
+    document.getElementById('home-timeline').textContent = state.goals.timeline || '3 Months';
+    document.getElementById('prog-goal-tag').textContent = `${state.goals.primary||'Build Muscle'} · ${state.goals.timeline||'3 Months'}`;
+    renderProgress();
+    renderClientChat();
+    show('app');
+    showTab('home', document.querySelector('#client-nav .nav-btn'));
+  }
+}
+
+// ══════════════════════════════════════
+//  GOAL QUESTIONS
+// ══════════════════════════════════════
+function renderGoalQuestion() {
+  const q = GOAL_QUESTIONS[goalStep];
+  // dots
+  const dots = document.getElementById('goal-dots');
+  dots.innerHTML = GOAL_QUESTIONS.map((_,i) => `<div class="step-dot ${i<=goalStep?'on':''}"></div>`).join('');
+  document.getElementById('goal-counter').textContent = `Question ${goalStep+1} of ${GOAL_QUESTIONS.length}`;
+  document.getElementById('goal-q').textContent = q.q;
+  const opts = document.getElementById('goal-opts');
+  opts.innerHTML = q.opts.map(o =>
+    `<button class="opt-btn ${state.goals[q.id]===o?'sel':''}" onclick="selectGoal('${q.id}','${o}')">${state.goals[q.id]===o?'✓ ':''}${o}</button>`
+  ).join('');
+}
+
+function selectGoal(id, val) {
+  state.goals[id] = val;
+  if(goalStep < GOAL_QUESTIONS.length - 1) {
+    goalStep++;
+    setTimeout(renderGoalQuestion, 250);
+  } else {
+    launchApp();
+  }
+}
+
+// ══════════════════════════════════════
+//  CHECK-IN MODAL
+// ══════════════════════════════════════
+function openCheckin() {
+  ciStep = 0;
+  state.checkInAnswers = {};
+  renderCiStep();
+  document.getElementById('checkin-modal').classList.add('open');
+}
+
+function renderCiStep() {
+  const q = CHECKIN_QUESTIONS[ciStep];
+  const dots = document.getElementById('ci-dots');
+  dots.innerHTML = CHECKIN_QUESTIONS.map((_,i) => `<div class="step-dot ${i<=ciStep?'on':''}"></div>`).join('');
+  document.getElementById('ci-question').textContent = q.q;
+  document.getElementById('ci-back').style.display = ciStep === 0 ? 'none' : '';
+  document.getElementById('ci-next').textContent = ciStep < CHECKIN_QUESTIONS.length-1 ? 'Next →' : 'Submit ✓';
+
+  const body = document.getElementById('ci-body');
+  if(q.type === 'emoji') {
+    body.innerHTML = `<div class="emoji-row">${q.opts.map((e,i) =>
+      `<button class="emoji-opt ${state.checkInAnswers[q.id]===i?'sel':''}" onclick="ciAnswer('${q.id}',${i},this)">${e}</button>`
+    ).join('')}</div>`;
+  } else if(q.type === 'opts') {
+    body.innerHTML = q.opts.map(o =>
+      `<button class="opt-btn ${state.checkInAnswers[q.id]===o?'sel':''}" onclick="ciAnswer('${q.id}','${o}',this)">${state.checkInAnswers[q.id]===o?'✓ ':''}${o}</button>`
+    ).join('');
+  } else {
+    body.innerHTML = `<textarea class="textarea-field" rows="3" placeholder="Type here..." oninput="ciAnswer('${q.id}',this.value)">${state.checkInAnswers[q.id]||''}</textarea>`;
+  }
+}
+
+function ciAnswer(id, val, btn) {
+  state.checkInAnswers[id] = val;
+  // update styles
+  const q = CHECKIN_QUESTIONS[ciStep];
+  if(q.type === 'emoji') {
+    document.querySelectorAll('.emoji-opt').forEach((b,i) => b.classList.toggle('sel', i === val));
+  } else if(q.type === 'opts') {
+    document.querySelectorAll('#ci-body .opt-btn').forEach(b => {
+      b.classList.remove('sel');
+      b.textContent = b.textContent.replace('✓ ','');
+    });
+    if(btn){ btn.classList.add('sel'); btn.textContent = '✓ ' + btn.textContent; }
+  }
+}
+
+function ciNext() {
+  if(ciStep < CHECKIN_QUESTIONS.length - 1) {
+    ciStep++;
+    renderCiStep();
+  } else {
+    document.getElementById('checkin-modal').classList.remove('open');
+    state.checkinDone = true;
+    state.checkinCount++;
+    state.streak++;
+    document.getElementById('checkin-count').textContent = state.checkinCount;
+    document.getElementById('streak-val').textContent = state.streak;
+    document.getElementById('streak-chip').textContent = `🔥 ${state.streak} Day Streak`;
+    document.getElementById('checkin-area').innerHTML = `
+      <div class="done-banner fadein">
+        <span style="font-size:36px;">✅</span>
+        <div><div style="font-weight:600;margin-bottom:2px;">Check-in Complete!</div>
+        <div style="font-size:13px;color:var(--muted);">Great job logging in today.</div></div>
+      </div>`;
+    showToast('Check-in submitted! 🎉');
+  }
+}
+
+function ciBack() {
+  if(ciStep > 0){ ciStep--; renderCiStep(); }
+}
+
+// ══════════════════════════════════════
+//  PROGRESS TAB
+// ══════════════════════════════════════
+function renderProgress() {
+  const bars = [
+    {label:"Workout Consistency", val:71},
+    {label:"Nutrition Adherence", val:58},
+    {label:"Sleep Quality", val:80},
+    {label:"Mindset Score", val:65},
+    {label:"Overall Progress", val:68},
+  ];
+  document.getElementById('prog-bars').innerHTML = bars.map(b => `
+    <div class="prog-item">
+      <div class="prog-item-hdr"><span>${b.label}</span><em>${b.val}%</em></div>
+      <div class="prog-bar"><div class="prog-fill" style="width:${b.val}%"></div></div>
+    </div>`).join('');
+
+  const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const moods = ['😊','😊','🙂','😊','🤩','😐','😊'];
+  const workouts = ['Workout ✓','Rest Day','Workout ✓','Workout ✓','Workout ✓','Rest Day','Workout ✓'];
+  document.getElementById('history-list').innerHTML = days.map((d,i) => `
+    <div class="history-row">
+      <span class="day">${d}</span>
+      <span style="font-size:20px;">${moods[i]}</span>
+      <span style="color:var(--muted);font-size:13px;">${workouts[i]}</span>
+      <span class="status">✓</span>
+    </div>`).join('');
+}
+
+// ══════════════════════════════════════
+//  PHOTOS
+// ══════════════════════════════════════
+function handleUpload(e) {
+  const files = Array.from(e.target.files);
+  files.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = ev => {
+      state.uploadedImages.push({url:ev.target.result, name:file.name, type:file.type});
+      renderImages();
+    };
+    reader.readAsDataURL(file);
+  });
+  showToast('Photo uploaded! 📸');
+}
+
+function renderImages() {
+  const grid = document.getElementById('img-grid');
+  const title = document.getElementById('uploaded-title');
+  if(state.uploadedImages.length === 0){ title.style.display='none'; grid.innerHTML=''; return; }
+  title.style.display='block';
+  grid.innerHTML = state.uploadedImages.map(img => `
+    <div class="img-thumb">
+      ${img.type.startsWith('image')
+        ? `<img src="${img.url}" alt="${img.name}"/>`
+        : `<div style="display:flex;flex-direction:column;align-items:center;gap:6px;"><span class="video-thumb-icon">🎥</span><span style="font-size:11px;color:var(--muted);">Video</span></div>`}
+      <div class="img-label">${img.name.length>16?img.name.slice(0,14)+'…':img.name}</div>
+    </div>`).join('');
+}
+
+// ══════════════════════════════════════
+//  CHAT (CLIENT SIDE)
+// ══════════════════════════════════════
+function renderClientChat() {
+  const box = document.getElementById('client-messages');
+  box.innerHTML = state.clientMessages.map(m => `
+    <div class="msg ${m.from}">
+      <div class="bubble">${m.text}</div>
+      <div class="msg-time">${m.time}</div>
+    </div>`).join('');
+  box.scrollTop = box.scrollHeight;
+}
+
+function sendClientMsg() {
+  const inp = document.getElementById('client-chat-input');
+  const txt = inp.value.trim();
+  if(!txt) return;
+  state.clientMessages.push({from:'client', text:txt, time:'Now'});
+  inp.value = '';
+  renderClientChat();
+  setTimeout(() => {
+    state.clientMessages.push({from:'coach', text:"Got it! Keep up the amazing work 💪", time:'Now'});
+    renderClientChat();
+  }, 1200);
+}
+
+// ══════════════════════════════════════
+//  COACH DASHBOARD
+// ══════════════════════════════════════
+function renderClientList() {
+  document.getElementById('client-list').innerHTML = CLIENTS.map(c => `
+    <div class="client-card" onclick="openClientDetail(${c.id})">
+      <div class="cl-av">${c.avatar}</div>
+      <div class="cl-info">
+        <h4>${c.name}</h4>
+        <p>${c.goal} · Last: ${c.lastCheckin}</p>
+        <div class="prog-bar" style="margin-top:8px;"><div class="prog-fill" style="width:${c.progress}%"></div></div>
+      </div>
+      <div class="streak-badge">🔥 ${c.streak}</div>
+    </div>`).join('');
+}
+
+function openClientDetail(id) {
+  const c = CLIENTS.find(x => x.id === id);
+  state.selectedClient = c;
+  document.getElementById('detail-av').textContent = c.avatar;
+  document.getElementById('detail-name').textContent = c.name;
+  document.getElementById('detail-goal').textContent = c.goal;
+  document.getElementById('detail-streak').textContent = c.streak;
+  document.getElementById('detail-prog').textContent = c.progress + '%';
+  document.getElementById('detail-prog-fill').style.width = c.progress + '%';
+  document.getElementById('detail-call-btn').onclick = () => startCall(c.name, c.avatar);
+
+  const rows = [
+    {lbl:'Mood', val: c.checkin.mood},
+    {lbl:'Sleep', val: c.checkin.sleep},
+    {lbl:'Nutrition', val: c.checkin.nutrition},
+    {lbl:'Workout', val: c.checkin.workout},
+    {lbl:'Win', val: c.checkin.win},
+    {lbl:'Challenge', val: c.checkin.challenge},
+  ];
+  document.getElementById('detail-checkin').innerHTML = rows.map(r => `
+    <div class="checkin-detail-row"><span class="lbl">${r.lbl}</span><span>${r.val}</span></div>`).join('');
+
+  document.getElementById('coach-messages').innerHTML = '';
+  state.coachMessages = [];
+
+  showTab('client-detail');
+}
+
+function sendCoachMsg() {
+  const inp = document.getElementById('coach-chat-input');
+  const txt = inp.value.trim();
+  if(!txt) return;
+  state.coachMessages.push({from:'coach', text:txt, time:'Now'});
+  inp.value = '';
+  const box = document.getElementById('coach-messages');
+  box.innerHTML = state.coachMessages.map(m => `
+    <div class="msg ${m.from}">
+      <div class="bubble">${m.text}</div>
+      <div class="msg-time">${m.time}</div>
+    </div>`).join('');
+  box.scrollTop = box.scrollHeight;
+  showToast('Message sent ✓');
+}
+
+function renderCoachMsgList() {
+  document.getElementById('coach-msg-list').innerHTML = CLIENTS.map(c => `
+    <div class="client-card" onclick="openClientDetail(${c.id});showTab('client-detail')">
+      <div class="cl-av">${c.avatar}</div>
+      <div class="cl-info">
+        <h4>${c.name}</h4>
+        <p style="color:var(--muted);font-size:13px;">Tap to message</p>
+      </div>
+      <span style="font-size:18px;">💬</span>
+    </div>`).join('');
+}
+
+// ══════════════════════════════════════
+//  VIDEO CALL
+// ══════════════════════════════════════
+function startCall(name, av) {
+  document.getElementById('call-av').textContent = av || 'TF';
+  document.getElementById('call-name').textContent = name || 'TrueForm Coaching';
+  document.getElementById('call-status').textContent = '● Connecting...';
+  document.getElementById('call-screen').classList.add('active');
+  state.callSeconds = 0;
+  state.muted = false;
+  document.getElementById('mute-btn').textContent = '🎙️';
+  setTimeout(() => {
+    document.getElementById('call-status').textContent = '● Connected · 0:00';
+    state.callTimer = setInterval(() => {
+      state.callSeconds++;
+      const m = Math.floor(state.callSeconds/60);
+      const s = String(state.callSeconds%60).padStart(2,'0');
+      document.getElementById('call-status').textContent = `● Connected · ${m}:${s}`;
+    }, 1000);
+  }, 1500);
+}
+
+function endCall() {
+  clearInterval(state.callTimer);
+  document.getElementById('call-screen').classList.remove('active');
+  showToast('Call ended');
+}
+
+function toggleMute() {
+  state.muted = !state.muted;
+  document.getElementById('mute-btn').textContent = state.muted ? '🔇' : '🎙️';
+}
+
+// ══════════════════════════════════════
+//  TOAST
+// ══════════════════════════════════════
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ══════════════════════════════════════
+//  CLOSE MODAL ON OVERLAY CLICK
+// ══════════════════════════════════════
+document.getElementById('checkin-modal').addEventListener('click', function(e){
+  if(e.target === this) this.classList.remove('open');
+});
+
+// Init progress on load
+renderProgress();
+renderImages();
+</script>
+</body>
+</html>
