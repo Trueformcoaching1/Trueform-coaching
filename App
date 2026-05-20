@@ -1,0 +1,650 @@
+import { useState, useRef, useEffect } from "react";
+
+const COLORS = {
+  bg: "#0a0a0f",
+  surface: "#111118",
+  card: "#16161f",
+  border: "#1e1e2e",
+  accent: "#c8f65a",
+  accentDim: "#9bbf3e",
+  gold: "#f0c060",
+  text: "#f0f0f0",
+  muted: "#6b6b80",
+  danger: "#ff5566",
+};
+
+const goalQuestions = [
+  { id: "primary", question: "What's your primary goal?", options: ["Lose Weight", "Build Muscle", "Improve Mindset", "Increase Energy", "Overall Wellness"] },
+  { id: "timeline", question: "What's your timeline?", options: ["1 Month", "3 Months", "6 Months", "1 Year", "Ongoing"] },
+  { id: "commitment", question: "How many days/week can you commit?", options: ["1–2 Days", "3–4 Days", "5–6 Days", "Every Day"] },
+  { id: "obstacles", question: "Biggest obstacle right now?", options: ["Motivation", "Time", "Knowledge", "Accountability", "Stress"] },
+];
+
+const checkInQuestions = [
+  { id: "mood", question: "How are you feeling today?", emoji: ["😞", "😐", "🙂", "😊", "🤩"], type: "emoji" },
+  { id: "sleep", question: "How many hours did you sleep?", options: ["<5 hrs", "5–6 hrs", "7–8 hrs", "8+ hrs"], type: "options" },
+  { id: "nutrition", question: "How was your nutrition today?", options: ["Poor", "Okay", "Good", "Excellent"], type: "options" },
+  { id: "workout", question: "Did you complete your workout?", options: ["Not yet", "Partial", "Yes!", "Rest day"], type: "options" },
+  { id: "win", question: "What's one win from today?", type: "text" },
+  { id: "challenge", question: "Anything you struggled with?", type: "text" },
+];
+
+// Simulated client data
+const mockClients = [
+  { id: 1, name: "Jordan M.", goal: "Build Muscle", streak: 7, lastCheckin: "Today", avatar: "JM", progress: 68 },
+  { id: 2, name: "Aisha K.", goal: "Lose Weight", streak: 14, lastCheckin: "Yesterday", avatar: "AK", progress: 45 },
+  { id: 3, name: "Tyler R.", goal: "Improve Mindset", streak: 3, lastCheckin: "Today", avatar: "TR", progress: 82 },
+];
+
+const mockMessages = [
+  { from: "coach", text: "Hey! Great check-in yesterday. Your consistency is showing 🔥", time: "9:00 AM" },
+  { from: "client", text: "Thanks! Feeling way more energized this week", time: "9:15 AM" },
+  { from: "coach", text: "That's the work paying off. Let's push harder this week 💪", time: "9:17 AM" },
+];
+
+export default function TrueFormApp() {
+  const [view, setView] = useState("landing");
+  const [role, setRole] = useState(null); // "client" or "coach"
+  const [signupStep, setSignupStep] = useState(0);
+  const [signupData, setSignupData] = useState({ name: "", email: "", password: "" });
+  const [goalAnswers, setGoalAnswers] = useState({});
+  const [checkInAnswers, setCheckInAnswers] = useState({});
+  const [checkInStep, setCheckInStep] = useState(0);
+  const [activeTab, setActiveTab] = useState("home");
+  const [selectedClient, setSelectedClient] = useState(null);
+  const [chatMsg, setChatMsg] = useState("");
+  const [messages, setMessages] = useState(mockMessages);
+  const [uploadedImages, setUploadedImages] = useState([]);
+  const [inCall, setInCall] = useState(false);
+  const [showCheckIn, setShowCheckIn] = useState(false);
+  const [checkInDone, setCheckInDone] = useState(false);
+  const fileInputRef = useRef();
+
+  const css = `
+    @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap');
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: ${COLORS.bg}; color: ${COLORS.text}; font-family: 'DM Sans', sans-serif; }
+    .tf-app { min-height: 100vh; background: ${COLORS.bg}; }
+    .bebas { font-family: 'Bebas Neue', sans-serif; letter-spacing: 1px; }
+    
+    /* Landing */
+    .landing { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; position: relative; overflow: hidden; }
+    .landing-bg { position: absolute; inset: 0; background: radial-gradient(ellipse 80% 60% at 50% 0%, #1a2a0a 0%, transparent 60%), radial-gradient(ellipse 60% 40% at 80% 80%, #0a1a20 0%, transparent 60%); pointer-events: none; }
+    .grid-overlay { position: absolute; inset: 0; background-image: linear-gradient(rgba(200,246,90,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(200,246,90,0.04) 1px, transparent 1px); background-size: 40px 40px; pointer-events: none; }
+    .logo-mark { width: 72px; height: 72px; border-radius: 20px; background: ${COLORS.accent}; display: flex; align-items: center; justify-content: center; margin-bottom: 24px; box-shadow: 0 0 40px rgba(200,246,90,0.3); }
+    .logo-mark span { font-family: 'Bebas Neue'; font-size: 32px; color: #0a0a0f; }
+    .landing h1 { font-family: 'Bebas Neue'; font-size: clamp(52px, 10vw, 96px); line-height: 0.9; text-align: center; letter-spacing: 2px; margin-bottom: 16px; }
+    .landing h1 em { color: ${COLORS.accent}; font-style: normal; }
+    .landing p { color: ${COLORS.muted}; font-size: 16px; text-align: center; max-width: 400px; line-height: 1.6; margin-bottom: 40px; }
+    .btn-row { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+    .btn-primary { background: ${COLORS.accent}; color: #0a0a0f; border: none; padding: 14px 32px; border-radius: 12px; font-family: 'Bebas Neue'; font-size: 18px; letter-spacing: 1px; cursor: pointer; transition: all 0.2s; }
+    .btn-primary:hover { background: ${COLORS.accentDim}; transform: translateY(-1px); }
+    .btn-outline { background: transparent; color: ${COLORS.accent}; border: 1.5px solid ${COLORS.accent}; padding: 14px 32px; border-radius: 12px; font-family: 'Bebas Neue'; font-size: 18px; letter-spacing: 1px; cursor: pointer; transition: all 0.2s; }
+    .btn-outline:hover { background: rgba(200,246,90,0.08); }
+    .btn-ghost { background: transparent; color: ${COLORS.muted}; border: 1.5px solid ${COLORS.border}; padding: 12px 24px; border-radius: 10px; font-size: 14px; cursor: pointer; transition: all 0.2s; }
+    .btn-ghost:hover { border-color: ${COLORS.muted}; color: ${COLORS.text}; }
+    .features { display: flex; gap: 20px; margin-top: 48px; flex-wrap: wrap; justify-content: center; }
+    .feature-pill { background: rgba(255,255,255,0.04); border: 1px solid ${COLORS.border}; padding: 8px 16px; border-radius: 999px; font-size: 13px; color: ${COLORS.muted}; display: flex; align-items: center; gap: 8px; }
+    .feature-pill span { color: ${COLORS.accent}; }
+
+    /* Auth / Signup */
+    .auth-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; background: ${COLORS.bg}; }
+    .auth-card { background: ${COLORS.card}; border: 1px solid ${COLORS.border}; border-radius: 24px; padding: 40px; width: 100%; max-width: 440px; }
+    .auth-card h2 { font-family: 'Bebas Neue'; font-size: 36px; letter-spacing: 1px; margin-bottom: 6px; }
+    .auth-card p { color: ${COLORS.muted}; font-size: 14px; margin-bottom: 28px; }
+    .form-field { margin-bottom: 16px; }
+    .form-field label { display: block; font-size: 12px; color: ${COLORS.muted}; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+    .form-field input { width: 100%; background: ${COLORS.surface}; border: 1px solid ${COLORS.border}; border-radius: 10px; padding: 12px 14px; color: ${COLORS.text}; font-size: 15px; outline: none; transition: border-color 0.2s; font-family: 'DM Sans'; }
+    .form-field input:focus { border-color: ${COLORS.accent}; }
+    .btn-full { width: 100%; margin-top: 8px; }
+    .step-indicator { display: flex; gap: 6px; margin-bottom: 24px; }
+    .step-dot { flex: 1; height: 3px; border-radius: 999px; background: ${COLORS.border}; transition: background 0.3s; }
+    .step-dot.active { background: ${COLORS.accent}; }
+
+    /* Goal Questions */
+    .q-card { background: ${COLORS.card}; border: 1px solid ${COLORS.border}; border-radius: 24px; padding: 40px; width: 100%; max-width: 500px; }
+    .q-card h2 { font-family: 'Bebas Neue'; font-size: 28px; margin-bottom: 24px; color: ${COLORS.text}; }
+    .option-btn { width: 100%; background: ${COLORS.surface}; border: 1.5px solid ${COLORS.border}; border-radius: 12px; padding: 14px 18px; text-align: left; color: ${COLORS.text}; font-size: 15px; cursor: pointer; transition: all 0.2s; margin-bottom: 10px; font-family: 'DM Sans'; }
+    .option-btn:hover, .option-btn.selected { border-color: ${COLORS.accent}; background: rgba(200,246,90,0.06); color: ${COLORS.accent}; }
+    
+    /* Main App */
+    .app-shell { display: flex; flex-direction: column; min-height: 100vh; max-width: 500px; margin: 0 auto; position: relative; }
+    .top-bar { padding: 20px 20px 0; display: flex; align-items: center; justify-content: space-between; }
+    .top-bar h2 { font-family: 'Bebas Neue'; font-size: 26px; letter-spacing: 1px; }
+    .avatar-sm { width: 36px; height: 36px; border-radius: 50%; background: ${COLORS.accent}; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; color: #0a0a0f; cursor: pointer; }
+    .content-area { flex: 1; padding: 20px; padding-bottom: 90px; overflow-y: auto; }
+    .bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 500px; background: rgba(17,17,24,0.96); border-top: 1px solid ${COLORS.border}; display: flex; padding: 12px 0 20px; backdrop-filter: blur(12px); z-index: 100; }
+    .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; transition: color 0.2s; color: ${COLORS.muted}; font-size: 11px; border: none; background: none; }
+    .nav-item.active { color: ${COLORS.accent}; }
+    .nav-icon { font-size: 22px; line-height: 1; }
+
+    /* Home */
+    .greeting-card { background: linear-gradient(135deg, ${COLORS.accent}22, ${COLORS.accent}08); border: 1px solid ${COLORS.accent}44; border-radius: 20px; padding: 24px; margin-bottom: 20px; }
+    .greeting-card h3 { font-family: 'Bebas Neue'; font-size: 28px; color: ${COLORS.accent}; }
+    .greeting-card p { color: ${COLORS.muted}; font-size: 14px; margin-top: 4px; }
+    .stat-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+    .stat-card { background: ${COLORS.card}; border: 1px solid ${COLORS.border}; border-radius: 16px; padding: 18px; }
+    .stat-card .val { font-family: 'Bebas Neue'; font-size: 36px; color: ${COLORS.accent}; line-height: 1; }
+    .stat-card .lbl { font-size: 12px; color: ${COLORS.muted}; margin-top: 4px; }
+    .section-title { font-family: 'Bebas Neue'; font-size: 20px; letter-spacing: 1px; color: ${COLORS.muted}; margin-bottom: 12px; }
+    .checkin-banner { background: ${COLORS.accent}; border-radius: 16px; padding: 20px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; cursor: pointer; }
+    .checkin-banner h4 { font-family: 'Bebas Neue'; font-size: 22px; color: #0a0a0f; }
+    .checkin-banner p { font-size: 13px; color: rgba(0,0,0,0.6); margin-top: 2px; }
+    .checkin-done { background: ${COLORS.card}; border: 1px solid ${COLORS.accent}44; border-radius: 16px; padding: 20px; display: flex; align-items: center; gap: 16px; margin-bottom: 20px; }
+    .prog-bar { height: 6px; background: ${COLORS.border}; border-radius: 999px; margin-top: 8px; overflow: hidden; }
+    .prog-fill { height: 100%; background: ${COLORS.accent}; border-radius: 999px; transition: width 0.5s; }
+
+    /* Check-in Modal */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: flex; align-items: flex-end; z-index: 200; }
+    .modal-sheet { background: ${COLORS.card}; border-radius: 24px 24px 0 0; padding: 32px 24px 40px; width: 100%; max-width: 500px; margin: 0 auto; }
+    .modal-sheet h3 { font-family: 'Bebas Neue'; font-size: 26px; margin-bottom: 20px; }
+    .emoji-row { display: flex; justify-content: space-around; margin-bottom: 8px; }
+    .emoji-opt { font-size: 36px; cursor: pointer; padding: 8px; border-radius: 12px; border: 2px solid transparent; transition: all 0.2s; background: none; }
+    .emoji-opt.selected, .emoji-opt:hover { border-color: ${COLORS.accent}; background: rgba(200,246,90,0.1); transform: scale(1.15); }
+    .text-input-field { width: 100%; background: ${COLORS.surface}; border: 1px solid ${COLORS.border}; border-radius: 12px; padding: 14px; color: ${COLORS.text}; font-size: 15px; font-family: 'DM Sans'; outline: none; resize: none; }
+    .text-input-field:focus { border-color: ${COLORS.accent}; }
+    .modal-nav { display: flex; gap: 10px; margin-top: 24px; }
+
+    /* Media */
+    .upload-zone { border: 2px dashed ${COLORS.border}; border-radius: 16px; padding: 32px; display: flex; flex-direction: column; align-items: center; gap: 12px; cursor: pointer; transition: all 0.2s; margin-bottom: 16px; }
+    .upload-zone:hover { border-color: ${COLORS.accent}; background: rgba(200,246,90,0.04); }
+    .upload-zone p { color: ${COLORS.muted}; font-size: 14px; text-align: center; }
+    .image-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .image-thumb { border-radius: 12px; overflow: hidden; aspect-ratio: 1; background: ${COLORS.surface}; display: flex; align-items: center; justify-content: center; border: 1px solid ${COLORS.border}; position: relative; }
+    .image-thumb img { width: 100%; height: 100%; object-fit: cover; }
+    .image-thumb .img-label { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.6); padding: 6px 8px; font-size: 11px; color: ${COLORS.muted}; }
+
+    /* Video Call */
+    .call-screen { position: fixed; inset: 0; background: #000; z-index: 300; display: flex; flex-direction: column; }
+    .call-main { flex: 1; background: ${COLORS.surface}; display: flex; align-items: center; justify-content: center; position: relative; }
+    .call-avatar { width: 100px; height: 100px; border-radius: 50%; background: ${COLORS.accent}; display: flex; align-items: center; justify-content: center; font-family: 'Bebas Neue'; font-size: 40px; color: #0a0a0f; }
+    .call-name { color: ${COLORS.text}; font-family: 'Bebas Neue'; font-size: 28px; margin-top: 16px; text-align: center; }
+    .call-status { color: ${COLORS.accent}; font-size: 14px; text-align: center; margin-top: 4px; }
+    .self-preview { position: absolute; bottom: 20px; right: 20px; width: 100px; height: 140px; background: ${COLORS.card}; border-radius: 16px; border: 2px solid ${COLORS.accent}; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+    .call-controls { background: rgba(0,0,0,0.9); padding: 24px; display: flex; justify-content: center; gap: 20px; }
+    .call-btn { width: 60px; height: 60px; border-radius: 50%; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 24px; transition: all 0.2s; }
+    .call-btn.end { background: ${COLORS.danger}; }
+    .call-btn.mute { background: ${COLORS.card}; border: 1px solid ${COLORS.border}; }
+    .call-btn:hover { transform: scale(1.1); }
+
+    /* Chat */
+    .chat-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid ${COLORS.border}; }
+    .chat-avatar { width: 44px; height: 44px; border-radius: 50%; background: ${COLORS.accent}; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; color: #0a0a0f; }
+    .chat-messages { display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; }
+    .msg { max-width: 75%; }
+    .msg.from-coach { align-self: flex-start; }
+    .msg.from-client { align-self: flex-end; }
+    .msg-bubble { padding: 10px 14px; border-radius: 16px; font-size: 14px; line-height: 1.5; }
+    .from-coach .msg-bubble { background: ${COLORS.card}; border: 1px solid ${COLORS.border}; color: ${COLORS.text}; border-bottom-left-radius: 4px; }
+    .from-client .msg-bubble { background: ${COLORS.accent}; color: #0a0a0f; border-bottom-right-radius: 4px; }
+    .msg-time { font-size: 11px; color: ${COLORS.muted}; margin-top: 4px; padding: 0 4px; }
+    .from-client .msg-time { text-align: right; }
+    .chat-input-row { display: flex; gap: 10px; align-items: center; }
+    .chat-input { flex: 1; background: ${COLORS.surface}; border: 1px solid ${COLORS.border}; border-radius: 24px; padding: 12px 18px; color: ${COLORS.text}; font-size: 14px; outline: none; font-family: 'DM Sans'; }
+    .chat-input:focus { border-color: ${COLORS.accent}; }
+    .send-btn { width: 44px; height: 44px; border-radius: 50%; background: ${COLORS.accent}; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+    .video-btn { width: 44px; height: 44px; border-radius: 50%; background: ${COLORS.card}; border: 1px solid ${COLORS.border}; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+
+    /* Coach Dashboard */
+    .client-card { background: ${COLORS.card}; border: 1px solid ${COLORS.border}; border-radius: 16px; padding: 18px; margin-bottom: 12px; display: flex; align-items: center; gap: 14px; cursor: pointer; transition: all 0.2s; }
+    .client-card:hover { border-color: ${COLORS.accent}44; }
+    .client-avatar { width: 48px; height: 48px; border-radius: 50%; background: ${COLORS.accent}; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; color: #0a0a0f; flex-shrink: 0; }
+    .client-info { flex: 1; }
+    .client-info h4 { font-size: 15px; font-weight: 600; margin-bottom: 2px; }
+    .client-info p { font-size: 12px; color: ${COLORS.muted}; }
+    .streak-badge { background: rgba(200,246,90,0.15); color: ${COLORS.accent}; font-size: 12px; padding: 4px 10px; border-radius: 999px; font-weight: 600; }
+    .back-btn { display: flex; align-items: center; gap: 6px; color: ${COLORS.muted}; font-size: 14px; cursor: pointer; margin-bottom: 20px; background: none; border: none; }
+    .back-btn:hover { color: ${COLORS.text}; }
+
+    /* Progress */
+    .goal-tag { display: inline-block; background: rgba(200,246,90,0.1); color: ${COLORS.accent}; border: 1px solid ${COLORS.accent}44; padding: 4px 12px; border-radius: 999px; font-size: 13px; margin-bottom: 16px; }
+    .prog-item { background: ${COLORS.card}; border: 1px solid ${COLORS.border}; border-radius: 14px; padding: 16px 18px; margin-bottom: 12px; }
+    .prog-item-header { display: flex; justify-content: space-between; margin-bottom: 10px; }
+    .prog-item-header span { font-size: 14px; font-weight: 500; }
+    .prog-item-header em { color: ${COLORS.accent}; font-style: normal; font-size: 14px; }
+  `;
+
+  const handleSendMessage = () => {
+    if (!chatMsg.trim()) return;
+    setMessages([...messages, { from: role === "coach" ? "coach" : "client", text: chatMsg, time: "Now" }]);
+    setChatMsg("");
+  };
+
+  const handleFileUpload = (e) => {
+    const files = Array.from(e.target.files);
+    files.forEach(file => {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        setUploadedImages(prev => [...prev, { url: ev.target.result, name: file.name, type: file.type }]);
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleGoalAnswer = (qId, answer) => {
+    const next = { ...goalAnswers, [qId]: answer };
+    setGoalAnswers(next);
+    if (signupStep < goalQuestions.length - 1) {
+      setTimeout(() => setSignupStep(s => s + 1), 300);
+    } else {
+      setTimeout(() => { setView("app"); setActiveTab("home"); }, 400);
+    }
+  };
+
+  const handleCheckInAnswer = (qId, answer) => {
+    setCheckInAnswers(prev => ({ ...prev, [qId]: answer }));
+  };
+
+  const advanceCheckIn = () => {
+    if (checkInStep < checkInQuestions.length - 1) setCheckInStep(s => s + 1);
+    else { setShowCheckIn(false); setCheckInDone(true); setCheckInStep(0); }
+  };
+
+  // ── LANDING ──
+  if (view === "landing") return (
+    <div className="tf-app">
+      <style>{css}</style>
+      <div className="landing">
+        <div className="landing-bg" />
+        <div className="grid-overlay" />
+        <div className="logo-mark"><span>TF</span></div>
+        <h1 className="bebas">TRUEFORM<br/><em>COACHING</em></h1>
+        <p>Transform your body, sharpen your mind, and show up as your best self — with a coach who's truly in your corner.</p>
+        <div className="btn-row">
+          <button className="btn-primary" onClick={() => { setRole("client"); setView("signup"); }}>Start Your Journey</button>
+          <button className="btn-outline" onClick={() => { setRole("coach"); setView("app"); setActiveTab("clients"); }}>Coach Login</button>
+        </div>
+        <div className="features" style={{marginTop: 48}}>
+          {["✦ Daily Check-ins", "✦ Progress Tracking", "✦ Photo Updates", "✦ Video Calls", "✦ 1:1 Messaging"].map(f => (
+            <div className="feature-pill" key={f}>{f}</div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+
+  // ── SIGNUP ──
+  if (view === "signup" && signupStep === 0) return (
+    <div className="tf-app">
+      <style>{css}</style>
+      <div className="auth-wrap">
+        <div className="auth-card">
+          <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:24}}>
+            <div className="logo-mark" style={{width:44,height:44,borderRadius:12}}><span style={{fontSize:18}}>TF</span></div>
+            <span className="bebas" style={{fontSize:22}}>TRUEFORM</span>
+          </div>
+          <h2>Create Account</h2>
+          <p>Start your transformation today</p>
+          <div className="form-field">
+            <label>Full Name</label>
+            <input placeholder="Your name" value={signupData.name} onChange={e => setSignupData(d => ({...d, name: e.target.value}))} />
+          </div>
+          <div className="form-field">
+            <label>Email</label>
+            <input type="email" placeholder="you@email.com" value={signupData.email} onChange={e => setSignupData(d => ({...d, email: e.target.value}))} />
+          </div>
+          <div className="form-field">
+            <label>Password</label>
+            <input type="password" placeholder="••••••••" value={signupData.password} onChange={e => setSignupData(d => ({...d, password: e.target.value}))} />
+          </div>
+          <button className="btn-primary btn-full" onClick={() => setView("goals")}>Continue →</button>
+          <p style={{textAlign:"center",marginTop:16,color:COLORS.muted,fontSize:13}}>
+            Already have an account? <span style={{color:COLORS.accent,cursor:"pointer"}} onClick={() => { setView("app"); setActiveTab("home"); }}>Log in</span>
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+
+  // ── GOAL QUESTIONS ──
+  if (view === "goals") {
+    const q = goalQuestions[signupStep];
+    return (
+      <div className="tf-app">
+        <style>{css}</style>
+        <div className="auth-wrap">
+          <div className="q-card">
+            <div className="step-indicator">
+              {goalQuestions.map((_, i) => <div key={i} className={`step-dot ${i <= signupStep ? "active" : ""}`} />)}
+            </div>
+            <p style={{color: COLORS.muted, fontSize: 13, marginBottom: 6}}>Question {signupStep + 1} of {goalQuestions.length}</p>
+            <h2>{q.question}</h2>
+            {q.options.map(opt => (
+              <button key={opt} className={`option-btn ${goalAnswers[q.id] === opt ? "selected" : ""}`}
+                onClick={() => handleGoalAnswer(q.id, opt)}>
+                {goalAnswers[q.id] === opt ? "✓ " : ""}{opt}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── VIDEO CALL ──
+  if (inCall) return (
+    <div className="tf-app">
+      <style>{css}</style>
+      <div className="call-screen">
+        <div className="call-main">
+          <div style={{display:"flex",flexDirection:"column",alignItems:"center"}}>
+            <div className="call-avatar">TF</div>
+            <div className="call-name">TrueForm Coaching</div>
+            <div className="call-status">● Connected · 0:42</div>
+          </div>
+          <div className="self-preview">
+            <span style={{fontSize:32}}>👤</span>
+          </div>
+        </div>
+        <div className="call-controls">
+          <button className="call-btn mute">🎙️</button>
+          <button className="call-btn mute">📷</button>
+          <button className="call-btn end" onClick={() => setInCall(false)}>📵</button>
+          <button className="call-btn mute">💬</button>
+        </div>
+      </div>
+    </div>
+  );
+
+  // ── MAIN APP ──
+  const renderHome = () => (
+    <>
+      <div className="greeting-card">
+        <h3>GOOD MORNING{signupData.name ? `, ${signupData.name.split(" ")[0].toUpperCase()}` : ""}! 👋</h3>
+        <p>Day 8 of your journey. Keep pushing — you're building something real.</p>
+      </div>
+
+      {!checkInDone ? (
+        <div className="checkin-banner" onClick={() => setShowCheckIn(true)}>
+          <div>
+            <h4>Daily Check-in</h4>
+            <p>2 min · Tell me how your day went</p>
+          </div>
+          <span style={{fontSize:28}}>📋</span>
+        </div>
+      ) : (
+        <div className="checkin-done">
+          <span style={{fontSize:36}}>✅</span>
+          <div>
+            <div style={{fontWeight:600,marginBottom:2}}>Check-in Complete!</div>
+            <div style={{fontSize:13,color:COLORS.muted}}>Great job logging in today.</div>
+          </div>
+        </div>
+      )}
+
+      <div className="stat-row">
+        <div className="stat-card">
+          <div className="val">8</div>
+          <div className="lbl">Day Streak 🔥</div>
+        </div>
+        <div className="stat-card">
+          <div className="val">5/7</div>
+          <div className="lbl">Workouts This Week</div>
+        </div>
+        <div className="stat-card">
+          <div className="val">68%</div>
+          <div className="lbl">Goal Progress</div>
+          <div className="prog-bar"><div className="prog-fill" style={{width:"68%"}} /></div>
+        </div>
+        <div className="stat-card">
+          <div className="val">12</div>
+          <div className="lbl">Check-ins Logged</div>
+        </div>
+      </div>
+
+      <div className="section-title">YOUR GOAL</div>
+      <div className="goal-tag">{goalAnswers.primary || "Build Muscle"}</div>
+      <div className="prog-bar" style={{height:8,marginBottom:8}}><div className="prog-fill" style={{width:"68%"}} /></div>
+      <p style={{fontSize:13,color:COLORS.muted,marginBottom:24}}>68% complete · {goalAnswers.timeline || "3 Months"} program</p>
+    </>
+  );
+
+  const renderCheckin = () => (
+    <div className="modal-overlay" onClick={() => setShowCheckIn(false)}>
+      <div className="modal-sheet" onClick={e => e.stopPropagation()}>
+        <div className="step-indicator">
+          {checkInQuestions.map((_, i) => <div key={i} className={`step-dot ${i <= checkInStep ? "active" : ""}`} />)}
+        </div>
+        <h3>{checkInQuestions[checkInStep].question}</h3>
+        {checkInQuestions[checkInStep].type === "emoji" && (
+          <div className="emoji-row">
+            {checkInQuestions[checkInStep].emoji.map((e, i) => (
+              <button key={i} className={`emoji-opt ${checkInAnswers[checkInQuestions[checkInStep].id] === i ? "selected" : ""}`}
+                onClick={() => handleCheckInAnswer(checkInQuestions[checkInStep].id, i)}>{e}</button>
+            ))}
+          </div>
+        )}
+        {checkInQuestions[checkInStep].type === "options" && (
+          checkInQuestions[checkInStep].options.map(opt => (
+            <button key={opt} className={`option-btn ${checkInAnswers[checkInQuestions[checkInStep].id] === opt ? "selected" : ""}`}
+              onClick={() => handleCheckInAnswer(checkInQuestions[checkInStep].id, opt)}>{opt}</button>
+          ))
+        )}
+        {checkInQuestions[checkInStep].type === "text" && (
+          <textarea className="text-input-field" rows={3} placeholder="Type here..."
+            value={checkInAnswers[checkInQuestions[checkInStep].id] || ""}
+            onChange={e => handleCheckInAnswer(checkInQuestions[checkInStep].id, e.target.value)} />
+        )}
+        <div className="modal-nav">
+          {checkInStep > 0 && <button className="btn-ghost" onClick={() => setCheckInStep(s => s - 1)}>← Back</button>}
+          <button className="btn-primary" style={{flex:1}} onClick={advanceCheckIn}>
+            {checkInStep < checkInQuestions.length - 1 ? "Next →" : "Submit ✓"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderMedia = () => (
+    <>
+      <div className="section-title" style={{marginBottom:16}}>SHARE PROGRESS PHOTOS</div>
+      <input type="file" ref={fileInputRef} accept="image/*,video/*" multiple style={{display:"none"}} onChange={handleFileUpload} />
+      <div className="upload-zone" onClick={() => fileInputRef.current.click()}>
+        <span style={{fontSize:40}}>📸</span>
+        <p>Tap to upload photos or videos<br/><span style={{fontSize:12,color:COLORS.accent}}>Share your progress with your coach</span></p>
+      </div>
+      {uploadedImages.length > 0 && (
+        <>
+          <div className="section-title" style={{marginBottom:12}}>UPLOADED</div>
+          <div className="image-grid">
+            {uploadedImages.map((img, i) => (
+              <div className="image-thumb" key={i}>
+                {img.type.startsWith("image") ? (
+                  <img src={img.url} alt={img.name} />
+                ) : (
+                  <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:8}}>
+                    <span style={{fontSize:36}}>🎥</span>
+                    <span style={{fontSize:11,color:COLORS.muted}}>Video</span>
+                  </div>
+                )}
+                <div className="img-label">{img.name.length > 16 ? img.name.slice(0,14)+"…" : img.name}</div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+      {uploadedImages.length === 0 && (
+        <div style={{textAlign:"center",padding:"40px 0",color:COLORS.muted,fontSize:14}}>
+          No photos shared yet.<br/>Upload your first progress photo!
+        </div>
+      )}
+    </>
+  );
+
+  const renderChat = () => (
+    <>
+      <div className="chat-header">
+        <div className="chat-avatar">TF</div>
+        <div style={{flex:1}}>
+          <div style={{fontWeight:600}}>TrueForm Coaching</div>
+          <div style={{fontSize:12,color:COLORS.accent}}>● Online</div>
+        </div>
+        <button className="video-btn" onClick={() => setInCall(true)}>📹</button>
+      </div>
+      <div className="chat-messages">
+        {messages.map((m, i) => (
+          <div key={i} className={`msg ${m.from === "coach" ? "from-coach" : "from-client"}`}>
+            <div className="msg-bubble">{m.text}</div>
+            <div className="msg-time">{m.time}</div>
+          </div>
+        ))}
+      </div>
+      <div className="chat-input-row">
+        <input className="chat-input" placeholder="Message your coach..." value={chatMsg}
+          onChange={e => setChatMsg(e.target.value)}
+          onKeyDown={e => e.key === "Enter" && handleSendMessage()} />
+        <button className="send-btn" onClick={handleSendMessage}>➤</button>
+      </div>
+    </>
+  );
+
+  const renderProgress = () => (
+    <>
+      <div className="section-title">GOAL OVERVIEW</div>
+      <div className="goal-tag">{goalAnswers.primary || "Build Muscle"} · {goalAnswers.timeline || "3 Months"}</div>
+      {[
+        { label: "Workout Consistency", value: 71 },
+        { label: "Nutrition Adherence", value: 58 },
+        { label: "Sleep Quality", value: 80 },
+        { label: "Mindset Score", value: 65 },
+        { label: "Overall Progress", value: 68 },
+      ].map(p => (
+        <div className="prog-item" key={p.label}>
+          <div className="prog-item-header">
+            <span>{p.label}</span>
+            <em>{p.value}%</em>
+          </div>
+          <div className="prog-bar"><div className="prog-fill" style={{width:`${p.value}%`}} /></div>
+        </div>
+      ))}
+      <div className="section-title" style={{marginTop:24}}>RECENT CHECK-INS</div>
+      {["Mon","Tue","Wed","Thu","Fri"].map((d, i) => (
+        <div key={d} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"10px 0",borderBottom:`1px solid ${COLORS.border}`}}>
+          <span style={{color:COLORS.muted,fontSize:13,width:40}}>{d}</span>
+          <span style={{fontSize:20}}>{"😊😊🙂😊🤩"[i]}</span>
+          <span style={{fontSize:13,color:COLORS.muted}}>{["Workout ✓","Rest Day","Workout ✓","Workout ✓","Workout ✓"][i]}</span>
+          <span style={{fontSize:13,color:COLORS.accent}}>✓</span>
+        </div>
+      ))}
+    </>
+  );
+
+  // ── COACH DASHBOARD ──
+  const renderCoach = () => {
+    if (selectedClient) {
+      const c = selectedClient;
+      return (
+        <>
+          <button className="back-btn" onClick={() => setSelectedClient(null)}>← Back to Clients</button>
+          <div style={{display:"flex",alignItems:"center",gap:16,marginBottom:24}}>
+            <div className="client-avatar" style={{width:60,height:60,fontSize:20}}>{c.avatar}</div>
+            <div>
+              <div style={{fontWeight:700,fontSize:18}}>{c.name}</div>
+              <div style={{fontSize:13,color:COLORS.muted}}>{c.goal}</div>
+            </div>
+            <div style={{marginLeft:"auto"}}>
+              <button className="btn-outline" style={{padding:"10px 18px",fontSize:14}} onClick={() => setInCall(true)}>📹 Call</button>
+            </div>
+          </div>
+          <div className="stat-row">
+            <div className="stat-card"><div className="val">{c.streak}</div><div className="lbl">Day Streak</div></div>
+            <div className="stat-card"><div className="val">{c.progress}%</div><div className="lbl">Progress</div><div className="prog-bar"><div className="prog-fill" style={{width:`${c.progress}%`}} /></div></div>
+          </div>
+          <div className="section-title">LAST CHECK-IN</div>
+          {[
+            {label:"Mood", val:"😊 Great"},
+            {label:"Sleep", val:"7–8 hrs"},
+            {label:"Nutrition", val:"Good"},
+            {label:"Workout", val:"Completed ✓"},
+            {label:"Win", val:"Hit a new PR on bench!"},
+            {label:"Challenge", val:"Meal prepping on weekends"},
+          ].map(item => (
+            <div key={item.label} style={{display:"flex",justifyContent:"space-between",padding:"10px 0",borderBottom:`1px solid ${COLORS.border}`,fontSize:14}}>
+              <span style={{color:COLORS.muted}}>{item.label}</span>
+              <span>{item.val}</span>
+            </div>
+          ))}
+          <div className="section-title" style={{marginTop:24}}>SEND MESSAGE</div>
+          <div className="chat-input-row">
+            <input className="chat-input" placeholder="Send a message to client..." value={chatMsg}
+              onChange={e => setChatMsg(e.target.value)}
+              onKeyDown={e => e.key === "Enter" && handleSendMessage()} />
+            <button className="send-btn" onClick={handleSendMessage}>➤</button>
+          </div>
+        </>
+      );
+    }
+    return (
+      <>
+        <div className="stat-row" style={{marginBottom:20}}>
+          <div className="stat-card"><div className="val">{mockClients.length}</div><div className="lbl">Active Clients</div></div>
+          <div className="stat-card"><div className="val">2</div><div className="lbl">Check-ins Today</div></div>
+        </div>
+        <div className="section-title">YOUR CLIENTS</div>
+        {mockClients.map(c => (
+          <div className="client-card" key={c.id} onClick={() => setSelectedClient(c)}>
+            <div className="client-avatar">{c.avatar}</div>
+            <div className="client-info">
+              <h4>{c.name}</h4>
+              <p>{c.goal} · Last check-in: {c.lastCheckin}</p>
+              <div className="prog-bar" style={{marginTop:8}}><div className="prog-fill" style={{width:`${c.progress}%`}} /></div>
+            </div>
+            <div className="streak-badge">🔥 {c.streak}</div>
+          </div>
+        ))}
+      </>
+    );
+  };
+
+  const tabs = role === "coach"
+    ? [{ id: "clients", label: "Clients", icon: "👥" }, { id: "messages", label: "Messages", icon: "💬" }]
+    : [
+        { id: "home", label: "Home", icon: "🏠" },
+        { id: "checkin", label: "Progress", icon: "📊" },
+        { id: "media", label: "Photos", icon: "📸" },
+        { id: "messages", label: "Coach", icon: "💬" },
+      ];
+
+  return (
+    <div className="tf-app">
+      <style>{css}</style>
+      <div className="app-shell">
+        <div className="top-bar">
+          <div style={{display:"flex",alignItems:"center",gap:10}}>
+            <div className="logo-mark" style={{width:36,height:36,borderRadius:10}}><span style={{fontSize:16}}>TF</span></div>
+            <span className="bebas" style={{fontSize:20}}>TRUEFORM</span>
+          </div>
+          <div style={{display:"flex",alignItems:"center",gap:10}}>
+            {role === "client" && (
+              <div style={{background:`rgba(200,246,90,0.1)`,border:`1px solid ${COLORS.accent}44`,borderRadius:999,padding:"4px 12px",fontSize:12,color:COLORS.accent}}>
+                🔥 8 Day Streak
+              </div>
+            )}
+            <div className="avatar-sm">{signupData.name ? signupData.name[0] : role === "coach" ? "C" : "U"}</div>
+          </div>
+        </div>
+
+        <div className="content-area">
+          {role === "coach"
+            ? activeTab === "clients" ? renderCoach() : renderChat()
+            : activeTab === "home" ? renderHome()
+            : activeTab === "checkin" ? renderProgress()
+            : activeTab === "media" ? renderMedia()
+            : renderChat()
+          }
+        </div>
+
+        <nav className="bottom-nav">
+          {tabs.map(t => (
+            <button key={t.id} className={`nav-item ${activeTab === t.id ? "active" : ""}`} onClick={() => setActiveTab(t.id)}>
+              <span className="nav-icon">{t.icon}</span>
+              {t.label}
+            </button>
+          ))}
+        </nav>
+
+        {showCheckIn && renderCheckin()}
+      </div>
+    </div>
+  );
+}
